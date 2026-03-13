@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Item {
+  id              String    @id @default(cuid())
+  sourceType      String    // youtube, x, blog, github
+  sourceId        String    // 原始 ID (video_id, tweet_id)
+  url             String    @unique
+  titleRaw        String
+  titleCn         String?
+  descriptionRaw  String?
+  descriptionCn   String?
+  author          String?
+  publishedAt     DateTime
+  fetchedAt       DateTime  @default(now())
+  status          String    @default("PENDING") // PENDING, REVIEWED, PUBLISHED, ARCHIVED, REJECTED
+  heatScore       Float     @default(0)
+  views           Int       @default(0)
+  likes           Int       @default(0)
+  comments        Int       @default(0)
+  isDuplicateOf   String?
+  duplicateOf     Item?     @relation("DuplicateItems", fields: [isDuplicateOf], references: [id])
+  duplicates      Item[]    @relation("DuplicateItems")
+  tags            ItemTag[]
+  
+  // 结构化字段（新增）
+  oneLiner        String?   // 一句话总结
+  difficulty      String?   // EASY, MEDIUM, HARD
+  cost            String?   // FREE, LOW, MEDIUM, HIGH
+  agentUsage      Int       @default(1)  // 需要几个 agent
+  businessPotential Int     @default(5)  // 商业潜力 1-10
+  timeToBuild     String?   // 1h, 1d, 1w, 1m
+  tools           String?   // JSON 数组：["工具 1", "工具 2"]
+  steps           String?   // JSON 数组：["步骤 1", "步骤 2"]
+  resources       String?   // JSON 数组：["链接 1", "链接 2"]
+  score           Float     @default(0)  // 综合评分 0-10
+  cluster         String?   // 所属专题/聚合
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([sourceType, sourceId])
+  @@index([status])
+  @@index([heatScore])
+  @@index([publishedAt])
+  @@index([cluster])
+  @@index([score])
+  @@index([difficulty])
+}
+
+
+
+model Tag {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  category    String // PLAYSTYLE, TUTORIAL, CASE, TOOL, UPDATE, PLATFORM
+  description String?
+  items       ItemTag[]
+  createdAt   DateTime    @default(now())
+}
+
+
+
+model ItemTag {
+  itemId    String
+  tagId     String
+  item      Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@id([itemId, tagId])
+}
+
+model DailyDigest {
+  id          String   @id @default(cuid())
+  date        String   @unique // YYYY-MM-DD
+  itemsJson   String
+  summary     String?
+  generatedAt DateTime @default(now())
+}
+
+model WeeklyDigest {
+  id          String   @id @default(cuid())
+  week        String   @unique // YYYY-Www
+  itemsJson   String
+  summary     String?
+  generatedAt DateTime @default(now())
+}
+
+model SourceConfig {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  type        String   // youtube, x, rss, github
+  enabled     Boolean  @default(true)
+  config      String   // JSON 配置
+  lastFetched DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

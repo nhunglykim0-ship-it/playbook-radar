@@ -1,0 +1,18 @@
+{
+  "jobs": [
+    {
+      "name": "Fetch Content",
+      "schedule": { "kind": "every", "everyMs": 21600000 },
+      "payload": { "kind": "systemEvent", "text": "fetch-content" },
+      "sessionTarget": "main",
+      "enabled": true
+    },
+    {
+      "name": "Generate Daily Digest",
+      "schedule": { "kind": "cron", "expr": "0 20 * * *", "tz": "Asia/Shanghai" },
+      "payload": { "kind": "systemEvent", "text": "generate-daily-digest" },
+      "sessionTarget": "main",
+      "enabled": true
+    }
+  ]
+}

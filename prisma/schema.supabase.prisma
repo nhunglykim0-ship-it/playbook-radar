@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Item {
+  id              String    @id @default("cmmn" + substr(random()::text, 1, 24))
+  sourceType      String    // youtube, x, blog, github
+  sourceId        String    // 原始 ID (video_id, tweet_id)
+  url             String    @unique
+  titleRaw        String
+  titleCn         String?
+  descriptionRaw  String?
+  descriptionCn   String?
+  author          String?
+  publishedAt     DateTime
+  fetchedAt       DateTime  @default(now())
+  status          String    @default("PENDING") // PENDING, REVIEWED, PUBLISHED, ARCHIVED, REJECTED
+  heatScore       Float     @default(0)
+  views           Int       @default(0)
+  likes           Int       @default(0)
+  comments        Int       @default(0)
+  isDuplicateOf   String?
+  duplicateOf     Item?     @relation("DuplicateItems", fields: [isDuplicateOf], references: [id])
+  duplicates      Item[]    @relation("DuplicateItems")
+  tags            ItemTag[]
+  
+  // 结构化字段
+  oneLiner        String?   // 一句话总结
+  difficulty      String?   // EASY, MEDIUM, HARD
+  cost            String?   // FREE, LOW, MEDIUM, HIGH
+  agentUsage      Int       @default(1)
+  businessPotential Int     @default(5)
+  timeToBuild     String?   // 1h, 1d, 1w, 1m
+  tools           String?   // JSON 数组
+  steps           String?   // JSON 数组
+  resources       String?   // JSON 数组
+  score           Float     @default(0)
+  cluster         String?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([sourceType, sourceId])
+  @@index([status])
+  @@index([heatScore])
+  @@index([publishedAt])
+  @@index([cluster])
+  @@index([score])
+  @@index([difficulty])
+  
+  @@map("Item")
+}
+
+model Tag {
+  id          String      @id @default("cmmn" + substr(random()::text, 1, 24))
+  name        String      @unique
+  category    String      // PLAYSTYLE, TUTORIAL, CASE, TOOL, UPDATE, PLATFORM
+  description String?
+  items       ItemTag[]
+  createdAt   DateTime    @default(now())
+
+  @@map("Tag")
+}
+
+model ItemTag {
+  itemId    String
+  tagId     String
+  item      Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@id([itemId, tagId])
+  
+  @@map("ItemTag")
+}
+
+model DailyDigest {
+  id          String   @id @default("cmmn" + substr(random()::text, 1, 24))
+  date        String   @unique // YYYY-MM-DD
+  itemsJson   String
+  summary     String?
+  generatedAt DateTime @default(now())
+
+  @@map("DailyDigest")
+}
+
+model WeeklyDigest {
+  id          String   @id @default("cmmn" + substr(random()::text, 1, 24))
+  week        String   @unique // YYYY-Www
+  itemsJson   String
+  summary     String?
+  generatedAt DateTime @default(now())
+
+  @@map("WeeklyDigest")
+}
+
+model SourceConfig {
+  id          String   @id @default("cmmn" + substr(random()::text, 1, 24))
+  name        String   @unique
+  type        String   // youtube, x, rss, github
+  enabled     Boolean  @default(true)
+  config      String   // JSON 配置
+  lastFetched DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("SourceConfig")
+}

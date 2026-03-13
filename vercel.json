@@ -1,0 +1,38 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "regions": ["hnd1"],
+  "buildCommand": "npx prisma generate && next build",
+  "installCommand": "pnpm install",
+  "outputDirectory": ".next",
+  "env": {
+    "DATABASE_URL": "@database-url",
+    "API_KEY": "@api-key",
+    "API_BASE_URL": "@api-base-url",
+    "NEXT_PUBLIC_PLAUSIBLE_DOMAIN": "@plausible-domain",
+    "NEXT_PUBLIC_PLAUSIBLE_URL": "@plausible-url"
+  },
+  "github": {
+    "silent": false,
+    "autoJobCancelation": true
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
+}

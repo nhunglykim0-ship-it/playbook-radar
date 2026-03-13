@@ -1,0 +1,138 @@
+name: Playbook Radar - 自动采集
+
+on:
+  schedule:
+    # 每 6 小时执行一次 (UTC 时间：0:00, 6:00, 12:00, 18:00)
+    # 对应北京时间：8:00, 14:00, 20:00, 2:00
+    - cron: '0 */6 * * *'
+    
+    # 每天 20:00 生成日报 (UTC 12:00 = 北京 20:00)
+    - cron: '0 12 * * *'
+  
+  workflow_dispatch:
+    inputs:
+      task:
+        description: '执行的任务'
+        required: true
+        default: 'fetch'
+        type: choice
+        options:
+          - fetch
+          - analyze
+          - digest
+
+env:
+  NODE_VERSION: '20'
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  API_KEY: ${{ secrets.API_KEY }}
+  API_BASE_URL: ${{ secrets.API_BASE_URL }}
+
+jobs:
+  fetch-content:
+    if: github.event_name == 'schedule' || github.event.inputs.task == 'fetch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+
+      - name: 📦 安装 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: 🟢 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 📚 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔧 生成 Prisma Client
+        run: pnpm prisma generate
+
+      - name: 🚀 执行内容采集
+        run: |
+          echo "⏰ 开始采集内容..."
+          npx tsx scripts/fetch-content.ts
+          echo "✅ 采集完成"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+
+  analyze-playbooks:
+    if: github.event_name == 'schedule' || github.event.inputs.task == 'analyze'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: fetch-content
+    
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+
+      - name: 📦 安装 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: 🟢 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 📚 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔧 生成 Prisma Client
+        run: pnpm prisma generate
+
+      - name: 🤖 执行 AI 分析
+        run: |
+          echo "⏰ 开始 AI 分析..."
+          ANALYZE_LIMIT=20 npx tsx scripts/analyze-playbooks.ts
+          echo "✅ 分析完成"
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+  generate-digest:
+    if: github.event_name == 'schedule' || github.event.inputs.task == 'digest'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+
+      - name: 📦 安装 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: 🟢 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 📚 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔧 生成 Prisma Client
+        run: pnpm prisma generate
+
+      - name: 📰 生成日报
+        run: |
+          echo "⏰ 开始生成日报..."
+          npx tsx scripts/generate-daily-digest.ts
+          echo "✅ 日报生成完成"
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
