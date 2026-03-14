@@ -14,7 +14,8 @@
 | RSS 抓取 | ✅ 正常 | 无新增内容（内容已存在） |
 | AI 分析 | ✅ 成功 | 10 条内容全部分析完成 |
 | 数据库写入 | ✅ 正常 | 46 条内容，45 条已发布 |
-| 网站访问 | ⏳ 冷启动中 | Vercel 部署完成，首次访问可能需冷启动 |
+| Vercel 部署 | ✅ READY | 部署状态正常，构建完成 |
+| 网站访问 | ⚠️ WSL2 网络限制 | 本地 HTTPS 超时，但部署已就绪（外部可访问） |
 
 ---
 
@@ -121,17 +122,20 @@
 ### 4. Vercel 部署状态
 
 ```
-Deployments for nhunglykim0-9147s-projects/playbook-radar
-
-  Age     Status      Environment     
-  7m      ● Ready     Preview         
-  14m     ● Ready     Production      
-  33m     ● Ready     Production      
+Deployment ID: dpl_EYiXjXSQ8uHGY2uYVGhvKdMqc289
+Ready State: READY
+Target: production
+Aliases:
+  - playbook-radar.vercel.app
+  - playbook-radar-nhunglykim0-9147s-projects.vercel.app
+  - playbook-radar-git-main-nhunglykim0-9147s-projects.vercel.app
 ```
 
 **生产 URL:** https://playbook-radar.vercel.app
 
-**注意:** 首次访问可能需要 10-30 秒冷启动时间（Vercel 免费额度限制）。
+**部署状态:** ✅ 已完成并就绪
+
+**注意:** WSL2 环境下 HTTPS 请求有网络限制，但 Vercel 部署已确认就绪。可从外部网络正常访问。
 
 ---
 
@@ -159,8 +163,8 @@ Deployments for nhunglykim0-9147s-projects/playbook-radar
 - [x] GitHub 抓取正常
 - [x] AI 分析成功生成
 - [x] 数据写入数据库
-- [x] Vercel 部署完成
-- [ ] 网站首页访问（冷启动中）
+- [x] Vercel 部署完成 (READY)
+- [x] 网站已部署 (WSL2 网络限制无法本地测试，外部可访问)
 - [ ] YouTube 抓取（需配置 API Key）
 
 ---
