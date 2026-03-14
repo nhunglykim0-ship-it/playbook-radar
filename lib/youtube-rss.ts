@@ -257,17 +257,8 @@ export async function fetchYouTubeRSS(): Promise<{
         
         console.log(`  ✅ 新增 ${channelCount} 条`);
         
-        // 更新最后抓取时间
-        await prisma.sourceConfig.upsert({
-          where: { name: `youtube:${channel.name}` },
-          update: { lastFetched: new Date() },
-          create: {
-            name: `youtube:${channel.name}`,
-            type: 'youtube',
-            config: JSON.stringify({ channelId: channel.channelId }),
-            lastFetched: new Date(),
-          },
-        });
+        // TODO: 更新最后抓取时间（需要添加 sourceConfig 模型）
+        // await prisma.sourceConfig.upsert({...});
         
       } catch (error) {
         console.error(`  ❌ 抓取失败：${error instanceof Error ? error.message : error}`);

@@ -86,17 +86,8 @@ export async function fetchYouTubeVideos(): Promise<{
       count++;
     }
 
-    // Update last fetched
-    await prisma.sourceConfig.upsert({
-      where: { name: 'youtube' },
-      update: { lastFetched: new Date() },
-      create: {
-        name: 'youtube',
-        type: 'youtube',
-        config: JSON.stringify({ query: SEARCH_QUERY }),
-        lastFetched: new Date(),
-      },
-    });
+    // TODO: Update last fetched (requires sourceConfig model)
+    // await prisma.sourceConfig.upsert({...});
 
     return { success: true, count };
   } catch (error) {
