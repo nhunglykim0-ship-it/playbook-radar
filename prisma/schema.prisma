@@ -29,7 +29,7 @@ model Item {
   duplicates      Item[]    @relation("DuplicateItems")
   tags            ItemTag[]
   
-  // 结构化字段（新增）
+  // 结构化字段
   oneLiner        String?   // 一句话总结
   difficulty      String?   // EASY, MEDIUM, HARD
   cost            String?   // FREE, LOW, MEDIUM, HIGH
@@ -54,18 +54,14 @@ model Item {
   @@index([difficulty])
 }
 
-
-
 model Tag {
   id          String      @id @default(cuid())
   name        String      @unique
-  category    String // PLAYSTYLE, TUTORIAL, CASE, TOOL, UPDATE, PLATFORM
+  category    String      // PLAYSTYLE, TUTORIAL, CASE, TOOL, UPDATE, PLATFORM
   description String?
   items       ItemTag[]
   createdAt   DateTime    @default(now())
 }
-
-
 
 model ItemTag {
   itemId    String
@@ -80,26 +76,9 @@ model ItemTag {
 model DailyDigest {
   id          String   @id @default(cuid())
   date        String   @unique // YYYY-MM-DD
-  itemsJson   String
-  summary     String?
+  itemsJson   String   // JSON 数组
+  summary     String   // AI 生成的摘要
   generatedAt DateTime @default(now())
-}
-
-model WeeklyDigest {
-  id          String   @id @default(cuid())
-  week        String   @unique // YYYY-Www
-  itemsJson   String
-  summary     String?
-  generatedAt DateTime @default(now())
-}
-
-model SourceConfig {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  type        String   // youtube, x, rss, github
-  enabled     Boolean  @default(true)
-  config      String   // JSON 配置
-  lastFetched DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

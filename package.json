@@ -9,8 +9,12 @@
     "lint": "next lint",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:push:prod": "cp prisma/schema.supabase.prisma prisma/schema.prisma && prisma db push && git checkout prisma/schema.prisma",
+    "db:studio": "prisma studio",
+    "fetch": "npx tsx scripts/fetch-content.ts",
+    "analyze": "npx tsx scripts/analyze-playbooks.ts",
+    "publish": "npx tsx scripts/bulk-publish.ts",
+    "digest": "npx tsx scripts/generate-daily-digest.ts"
   },
   "dependencies": {
     "next": "14.2.0",
